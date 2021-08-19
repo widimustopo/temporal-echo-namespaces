@@ -2,12 +2,12 @@ package main
 
 import (
 	"github.com/joho/godotenv"
-	//"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"github.com/widimustopo/temporal-namespaces-manager/libs"
-	"github.com/widimustopo/temporal-namespaces-manager/temporal/workflows"
-	"go.temporal.io/sdk/client"
-	"go.temporal.io/sdk/worker"
+	"github.com/widimustopo/temporal-namespaces-manager/middleware/validator"
+	"github.com/widimustopo/temporal-namespaces-manager/responses"
+	domain "github.com/widimustopo/temporal-namespaces-manager/routes"
 )
 
 var loadConfig *libs.Config
@@ -25,41 +25,20 @@ func main() {
 
 	}
 
-	//init temporal client
-	temporalClient := initTemporalClient(loadConfig)
+	router := echo.New()
 
-	startWorkflow := initStarterWorkflow(temporalClient)
+	router.Validator = validator.NewValidator()
 
-	defer func() {
-		startWorkflow.Stop()
-	}()
+	//custom response for not matching routes
+	echo.NotFoundHandler = func(c echo.Context) error {
+		// render 404 custom response
+		return responses.NotFound(c, "Not Matching of Any Routes", nil, "Not Found")
+	}
 
-}
-
-func initTemporalClient(cfg *libs.Config) client.Client {
-	c, err := client.NewClient(client.Options{
-		HostPort:  client.DefaultHostPort,
-		Namespace: client.DefaultNamespace,
-	})
-
+	domain.Routes(router, loadConfig)
+	err = router.Start(loadConfig.ServerPort)
 	if err != nil {
-		logrus.Fatalln("Unable to create client", err)
+		logrus.Info(err)
+		panic(err)
 	}
-
-	return c
-}
-
-func initStarterWorkflow(temporalClient client.Client) worker.Worker {
-	workerOptions := worker.Options{
-		MaxConcurrentWorkflowTaskExecutionSize: libs.AxConcurrentWorkflowSize,
-	}
-	worker := worker.New(temporalClient, libs.StartActivityWorkflow, workerOptions)
-	worker.RegisterWorkflow(workflows.StartActivityWorkflow)
-
-	err := worker.Start()
-	if err != nil {
-		logrus.Fatal("cannot start temporal worker: " + err.Error())
-	}
-
-	return worker
 }

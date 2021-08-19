@@ -17,7 +17,7 @@ const (
 	DeleteSuccess                 = "Delete Success"
 
 	//Temporal
-	StartActivityWorkflow = "StartActivityWorkflow"
+	RegisterWorkflow = "RegisterWorkflow"
 	//Register Member
 	ActivityRegisterMember = "RegisterMember"
 	RegisterMemberQueue    = "REG-MEMBER-QUEUE"
