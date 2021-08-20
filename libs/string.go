@@ -22,15 +22,15 @@ const (
 	OrderWorkflow       = "OrderWorkflow"
 	ExpiredWorkflow     = "ExpiredWorkflow"
 	PaymentFailWorkflow = "PaymentFailWorkflow"
+	AddProductWorkflow  = "AddProductWorkflow"
 	//Register Member
 	ActivityRegisterMember = "RegisterMember"
-	RegisterMemberQueue    = "REG-MEMBER-QUEUE"
 	//Payment
 	ActivityPayment = "Payment"
-	PaymentQueue    = "PAYMENT-QUEUE"
 	//PaymentFail
 	ActivityPaymentFail = "PaymentFail"
-	PaymentFailQueue    = "PAYMENT-FAIL-QUEUE"
+	//Product
+	ActivityAddProduct = "AddProduct"
 
 	AxConcurrentWorkflowSize = 100
 )

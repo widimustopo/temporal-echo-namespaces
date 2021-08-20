@@ -4,10 +4,10 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
-	"github.com/widimustopo/temporal-namespaces-manager/libs"
-	"github.com/widimustopo/temporal-namespaces-manager/middleware/validator"
-	"github.com/widimustopo/temporal-namespaces-manager/responses"
-	domain "github.com/widimustopo/temporal-namespaces-manager/routes"
+	"github.com/widimustopo/temporal-echo-namespaces/libs"
+	"github.com/widimustopo/temporal-echo-namespaces/middleware/validator"
+	"github.com/widimustopo/temporal-echo-namespaces/responses"
+	domain "github.com/widimustopo/temporal-echo-namespaces/routes"
 )
 
 var loadConfig *libs.Config

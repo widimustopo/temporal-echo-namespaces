@@ -5,11 +5,11 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
-	"github.com/widimustopo/temporal-namespaces-manager/entities"
-	"github.com/widimustopo/temporal-namespaces-manager/libs"
-	"github.com/widimustopo/temporal-namespaces-manager/repositories"
-	temporalClient "github.com/widimustopo/temporal-namespaces-manager/temporal/client"
-	"github.com/widimustopo/temporal-namespaces-manager/temporal/workflows/starter"
+	"github.com/widimustopo/temporal-echo-namespaces/entities"
+	"github.com/widimustopo/temporal-echo-namespaces/libs"
+	"github.com/widimustopo/temporal-echo-namespaces/repositories"
+	temporalClient "github.com/widimustopo/temporal-echo-namespaces/temporal/client"
+	"github.com/widimustopo/temporal-echo-namespaces/temporal/workflows/starter"
 )
 
 type Services struct {
@@ -107,6 +107,28 @@ func (s Services) PaymentFail(ctx echo.Context, req *entities.Paid) (interface{}
 	}
 
 	resp, err := starter.ExecutePaymentFailWorkflow(ctx.Request().Context(), clientPayment, newReq)
+	if err != nil {
+		logrus.Error(err.Error())
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (s Services) AddProduct(ctx echo.Context, req *entities.Product) (interface{}, error) {
+	clientProduct := temporalClient.InitTemporalProductClient(s.Config)
+	defer clientProduct.Close()
+
+	var newReq *entities.TemporalProductRequest
+
+	newReq = &entities.TemporalProductRequest{
+		Times:        time.Now().Local(),
+		Data:         req,
+		WorkflowName: libs.PaymentFailWorkflow,
+		Attempt:      3,
+	}
+
+	resp, err := starter.ExecuteProductWorkflow(ctx.Request().Context(), clientProduct, newReq)
 	if err != nil {
 		logrus.Error(err.Error())
 		return nil, err

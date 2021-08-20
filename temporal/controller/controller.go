@@ -2,11 +2,11 @@ package controller
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/widimustopo/temporal-namespaces-manager/entities"
-	"github.com/widimustopo/temporal-namespaces-manager/libs"
-	"github.com/widimustopo/temporal-namespaces-manager/repositories"
-	"github.com/widimustopo/temporal-namespaces-manager/responses"
-	"github.com/widimustopo/temporal-namespaces-manager/temporal/services"
+	"github.com/widimustopo/temporal-echo-namespaces/entities"
+	"github.com/widimustopo/temporal-echo-namespaces/libs"
+	"github.com/widimustopo/temporal-echo-namespaces/repositories"
+	"github.com/widimustopo/temporal-echo-namespaces/responses"
+	"github.com/widimustopo/temporal-echo-namespaces/temporal/services"
 )
 
 type ServicesHandler struct {
@@ -103,6 +103,25 @@ func (s ServicesHandler) PaymentFail(ctx echo.Context) error {
 	}
 
 	data, err := s.repository.PaymentFail(ctx, req)
+	if err != nil {
+		return responses.InternalServerError(ctx, libs.InternalServerError, nil, err.Error())
+	}
+
+	return responses.SingleData(ctx, libs.OK, data, nil)
+}
+
+func (s ServicesHandler) AddProduct(ctx echo.Context) error {
+	var req *entities.Product
+
+	if err := ctx.Bind(&req); err != nil {
+		return responses.BadRequest(ctx, libs.BadRequest, nil, err.Error())
+	}
+
+	if err := ctx.Validate(req); err != nil {
+		return responses.ValidationError(ctx, libs.ValidationError, nil, err.Error())
+	}
+
+	data, err := s.repository.AddProduct(ctx, req)
 	if err != nil {
 		return responses.InternalServerError(ctx, libs.InternalServerError, nil, err.Error())
 	}

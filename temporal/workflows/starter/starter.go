@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/sirupsen/logrus"
-	"github.com/widimustopo/temporal-namespaces-manager/entities"
-	"github.com/widimustopo/temporal-namespaces-manager/libs"
+	"github.com/widimustopo/temporal-echo-namespaces/entities"
+	"github.com/widimustopo/temporal-echo-namespaces/libs"
 	"go.temporal.io/sdk/client"
 )
 
@@ -17,6 +17,7 @@ func ExecuteRegisterWorkflow(ctx context.Context, temporalClient client.Client, 
 
 	workflowRun, err := temporalClient.ExecuteWorkflow(ctx, workflowOptions, libs.RegisterWorkflow, req)
 	if err != nil {
+		logrus.Error(err.Error())
 		return nil, err
 	}
 
@@ -25,6 +26,7 @@ func ExecuteRegisterWorkflow(ctx context.Context, temporalClient client.Client, 
 	var workflowResp interface{}
 	err = workflowRun.Get(ctx, &workflowResp)
 	if err != nil {
+		logrus.Error(err.Error())
 		return nil, err
 	}
 
@@ -39,6 +41,7 @@ func ExecuteOrderWorkflow(ctx context.Context, temporalClient client.Client, req
 
 	workflowRun, err := temporalClient.ExecuteWorkflow(ctx, workflowOptions, libs.OrderWorkflow, req)
 	if err != nil {
+		logrus.Error(err.Error())
 		return nil, err
 	}
 
@@ -47,6 +50,7 @@ func ExecuteOrderWorkflow(ctx context.Context, temporalClient client.Client, req
 	var workflowResp interface{}
 	err = workflowRun.Get(ctx, &workflowResp)
 	if err != nil {
+		logrus.Error(err.Error())
 		return nil, err
 	}
 
@@ -60,6 +64,7 @@ func ExecutePaymentWorkflow(ctx context.Context, temporalClient client.Client, r
 
 	workflowRun, err := temporalClient.ExecuteWorkflow(ctx, workflowOptions, libs.PaymentWorkflow, req)
 	if err != nil {
+		logrus.Error(err.Error())
 		return nil, err
 	}
 
@@ -68,6 +73,7 @@ func ExecutePaymentWorkflow(ctx context.Context, temporalClient client.Client, r
 	var workflowResp interface{}
 	err = workflowRun.Get(ctx, &workflowResp)
 	if err != nil {
+		logrus.Error(err.Error())
 		return nil, err
 	}
 
@@ -81,6 +87,7 @@ func ExecutePaymentFailWorkflow(ctx context.Context, temporalClient client.Clien
 
 	workflowRun, err := temporalClient.ExecuteWorkflow(ctx, workflowOptions, libs.PaymentFailWorkflow, req)
 	if err != nil {
+		logrus.Error(err.Error())
 		return nil, err
 	}
 
@@ -89,6 +96,30 @@ func ExecutePaymentFailWorkflow(ctx context.Context, temporalClient client.Clien
 	var workflowResp interface{}
 	err = workflowRun.Get(ctx, &workflowResp)
 	if err != nil {
+		logrus.Error(err.Error())
+		return nil, err
+	}
+
+	return workflowResp, err
+}
+
+func ExecuteProductWorkflow(ctx context.Context, temporalClient client.Client, req *entities.TemporalProductRequest) (resp interface{}, err error) {
+	workflowOptions := client.StartWorkflowOptions{
+		TaskQueue: libs.AddProductWorkflow,
+	}
+
+	workflowRun, err := temporalClient.ExecuteWorkflow(ctx, workflowOptions, libs.AddProductWorkflow, req)
+	if err != nil {
+		logrus.Error(err.Error())
+		return nil, err
+	}
+
+	logrus.Println("Started workflow", "WorkflowID", workflowRun.GetID(), "RunID", workflowRun.GetRunID())
+
+	var workflowResp interface{}
+	err = workflowRun.Get(ctx, &workflowResp)
+	if err != nil {
+		logrus.Error(err.Error())
 		return nil, err
 	}
 
