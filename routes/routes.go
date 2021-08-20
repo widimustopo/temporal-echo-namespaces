@@ -7,8 +7,9 @@ import (
 )
 
 func Routes(router *echo.Echo, cfg *libs.Config) {
-	serviesHandler := controller.NewServiceHandler(cfg)
-	router.POST("/registers", serviesHandler.Register)
-	router.POST("/orders/:product_id", serviesHandler.Order)
-	router.POST("/payment/:payment_id", serviesHandler.Payment)
+	servicesHandler := controller.NewServiceHandler(cfg)
+	router.POST("/registers", servicesHandler.Register)
+	router.POST("/orders/:member_id/:product_id", servicesHandler.Order)
+	router.POST("/payments/:payment_id/members/:member_id", servicesHandler.Payment)
+	router.PATCH("/updates/payments/:payment_id/:member_id", servicesHandler.PaymentFail)
 }

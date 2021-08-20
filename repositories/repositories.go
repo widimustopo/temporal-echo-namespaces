@@ -8,5 +8,6 @@ import (
 type Repositories interface {
 	Register(ctx echo.Context, req *entities.Member) (interface{}, error)
 	Order(ctx echo.Context, req *entities.Payment) (interface{}, error)
-	Payment(ctx echo.Context, paymentID string) (interface{}, error)
+	Payment(ctx echo.Context, req *entities.Paid) (interface{}, error)
+	PaymentFail(ctx echo.Context, req *entities.Paid) (interface{}, error)
 }

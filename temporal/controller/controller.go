@@ -45,6 +45,15 @@ func (s ServicesHandler) Register(ctx echo.Context) error {
 func (s ServicesHandler) Order(ctx echo.Context) error {
 	var req *entities.Payment
 
+	productID := ctx.Param("product_id")
+	memberID := ctx.Param("member_id")
+
+	req = &entities.Payment{
+		ProductID:     productID,
+		MemberID:      memberID,
+		StatusPayment: "unpaid",
+	}
+
 	if err := ctx.Bind(&req); err != nil {
 		return responses.BadRequest(ctx, libs.BadRequest, nil, err.Error())
 	}
@@ -63,8 +72,37 @@ func (s ServicesHandler) Order(ctx echo.Context) error {
 
 func (s ServicesHandler) Payment(ctx echo.Context) error {
 	paymentID := ctx.Param("payment_id")
+	memberID := ctx.Param("member_id")
 
-	data, err := s.repository.Payment(ctx, paymentID)
+	var req *entities.Paid
+
+	req = &entities.Paid{
+		PaymentID:     paymentID,
+		MemberID:      memberID,
+		StatusPayment: "paid",
+	}
+
+	data, err := s.repository.Payment(ctx, req)
+	if err != nil {
+		return responses.InternalServerError(ctx, libs.InternalServerError, nil, err.Error())
+	}
+
+	return responses.SingleData(ctx, libs.OK, data, nil)
+}
+
+func (s ServicesHandler) PaymentFail(ctx echo.Context) error {
+	paymentID := ctx.Param("payment_id")
+	memberID := ctx.Param("member_id")
+
+	var req *entities.Paid
+
+	req = &entities.Paid{
+		PaymentID:     paymentID,
+		MemberID:      memberID,
+		StatusPayment: "failed",
+	}
+
+	data, err := s.repository.PaymentFail(ctx, req)
 	if err != nil {
 		return responses.InternalServerError(ctx, libs.InternalServerError, nil, err.Error())
 	}

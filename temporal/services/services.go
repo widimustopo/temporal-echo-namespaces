@@ -9,7 +9,7 @@ import (
 	"github.com/widimustopo/temporal-namespaces-manager/libs"
 	"github.com/widimustopo/temporal-namespaces-manager/repositories"
 	temporalClient "github.com/widimustopo/temporal-namespaces-manager/temporal/client"
-	"github.com/widimustopo/temporal-namespaces-manager/temporal/workflows"
+	"github.com/widimustopo/temporal-namespaces-manager/temporal/workflows/starter"
 )
 
 type Services struct {
@@ -25,15 +25,15 @@ func (s Services) Register(ctx echo.Context, req *entities.Member) (interface{},
 
 	defer clientMember.Close()
 
-	var newReq *entities.TemporalRequest
+	var newReq *entities.TemporalMemberRequest
 
-	newReq = &entities.TemporalRequest{
+	newReq = &entities.TemporalMemberRequest{
 		Times:        time.Now().Local(),
 		Data:         req,
 		WorkflowName: libs.RegisterWorkflow,
 	}
 
-	resp, err := workflows.ExecuteRegisterWorkflow(ctx.Request().Context(), clientMember, newReq)
+	resp, err := starter.ExecuteRegisterWorkflow(ctx.Request().Context(), clientMember, newReq)
 	if err != nil {
 		logrus.Error(err.Error())
 		return nil, err
@@ -43,8 +43,74 @@ func (s Services) Register(ctx echo.Context, req *entities.Member) (interface{},
 }
 
 func (s Services) Order(ctx echo.Context, req *entities.Payment) (interface{}, error) {
-	return nil, nil
+	clientPayment := temporalClient.InitTemporalPaymentClient(s.Config)
+	defer clientPayment.Close()
+
+	var newReq *entities.TemporalOrderRequest
+
+	minute := 1 //duration expired to paid
+	endPayment := time.Now().Local().Add(time.Minute * time.Duration(minute))
+
+	newReq = &entities.TemporalOrderRequest{
+		Data:         req,
+		WorkflowName: libs.ExpiredWorkflow,
+		TypesTimes:   "until",
+		Times:        endPayment,
+		TaskType:     "http",
+		Task:         "http://localhost:8080/updates/payments/",
+		Interval:     time.Second,
+		MaxInterval:  time.Minute * 5,
+		Attempt:      10,
+		Retry:        10,
+	}
+
+	resp, err := starter.ExecuteOrderWorkflow(ctx.Request().Context(), clientPayment, newReq)
+	if err != nil {
+		logrus.Error(err.Error())
+		return nil, err
+	}
+
+	return resp, nil
 }
-func (s Services) Payment(ctx echo.Context, paymentID string) (interface{}, error) {
-	return nil, nil
+
+func (s Services) Payment(ctx echo.Context, req *entities.Paid) (interface{}, error) {
+	clientPayment := temporalClient.InitTemporalPaymentClient(s.Config)
+	defer clientPayment.Close()
+
+	var newReq *entities.TemporalPaymentRequest
+
+	newReq = &entities.TemporalPaymentRequest{
+		Times:        time.Now().Local(),
+		Data:         req,
+		WorkflowName: libs.PaymentWorkflow,
+	}
+
+	resp, err := starter.ExecutePaymentWorkflow(ctx.Request().Context(), clientPayment, newReq)
+	if err != nil {
+		logrus.Error(err.Error())
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (s Services) PaymentFail(ctx echo.Context, req *entities.Paid) (interface{}, error) {
+	clientPayment := temporalClient.InitTemporalPaymentClient(s.Config)
+	defer clientPayment.Close()
+
+	var newReq *entities.TemporalPaymentRequest
+
+	newReq = &entities.TemporalPaymentRequest{
+		Times:        time.Now().Local(),
+		Data:         req,
+		WorkflowName: libs.PaymentFailWorkflow,
+	}
+
+	resp, err := starter.ExecutePaymentFailWorkflow(ctx.Request().Context(), clientPayment, newReq)
+	if err != nil {
+		logrus.Error(err.Error())
+		return nil, err
+	}
+
+	return resp, nil
 }

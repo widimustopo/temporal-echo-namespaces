@@ -17,13 +17,20 @@ const (
 	DeleteSuccess                 = "Delete Success"
 
 	//Temporal
-	RegisterWorkflow = "RegisterWorkflow"
+	RegisterWorkflow    = "RegisterWorkflow"
+	PaymentWorkflow     = "PaymentWorkflow"
+	OrderWorkflow       = "OrderWorkflow"
+	ExpiredWorkflow     = "ExpiredWorkflow"
+	PaymentFailWorkflow = "PaymentFailWorkflow"
 	//Register Member
 	ActivityRegisterMember = "RegisterMember"
 	RegisterMemberQueue    = "REG-MEMBER-QUEUE"
 	//Payment
 	ActivityPayment = "Payment"
 	PaymentQueue    = "PAYMENT-QUEUE"
+	//PaymentFail
+	ActivityPaymentFail = "PaymentFail"
+	PaymentFailQueue    = "PAYMENT-FAIL-QUEUE"
 
 	AxConcurrentWorkflowSize = 100
 )
